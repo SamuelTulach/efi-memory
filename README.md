@@ -34,7 +34,7 @@ If the compile was successful, you should now see memory.efi in the driver folde
 In order to use the efi-memory driver, you need to load it. First, obtain a copy of memory.efi ([compile it](https://github.com/SamuelTulach/efi-memory#compiling) or [download it from release section](https://github.com/SamuelTulach/efi-memory/releases)) and a copy of [EDK2 efi shell](https://github.com/tianocore/edk2/releases). Now follow these steps:
 
 1. Extract downloaded efi shell and rename file Shell.efi (should be in folder UefiShell/X64) to bootx64.efi
-2. Format some USB driver to FAT32
+2. Format some USB drive to FAT32
 3. Create following folder structure:
 ```
   USB:.
@@ -44,7 +44,7 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
         └───Boot
                 bootx64.efi
 ```
-4. Boot from the USB driver
+4. Boot from the USB drive
 5. An UEFI shell should start, change directory to your USB (FS0 should be the USB since we are booting from it) and list files:
 ```
     FS0:
@@ -54,4 +54,4 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 ```
     load memory.efi
 ```
-7. Now there should be a nice efi-memory ascii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure
+7. Now there should be a nice efi-memory ascii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure (while Windows is booting the screen should go blue with confirmation text)
