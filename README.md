@@ -36,10 +36,11 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 1. Extract downloaded efi shell and rename file Shell.efi (should be in folder UefiShell/X64) to bootx64.efi
 2. Format some USB driver to FAT32
 3. Create following folder structure:
-    
-    USB:.
-    │   memory.efi
-    │
-    └───EFI
-        └───Boot
-                bootx64.efi
+` 
+USB:.
+│   memory.efi
+│
+└───EFI
+    └───Boot
+            bootx64.efi
+` 
