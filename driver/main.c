@@ -15,10 +15,6 @@ static const EFI_GUID ProtocolGuid
 static const EFI_GUID VirtualGuid
     = { 0x13FA7698, 0xC831, 0x49C7, { 0x87, 0xEA, 0x8F, 0x43, 0xFC, 0xC2, 0x51, 0x96 }};
 
-// Global variable GUID (gEfiGlobalVariableGuid)
-static const EFI_GUID VariableGuid
-    = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
-
 // ExitBootServices GUID (gEfiEventExitBootServicesGuid)
 static const EFI_GUID ExitGuid
     = { 0x27ABF055, 0xB1B8, 0x4C26, { 0x80, 0x48, 0x74, 0x8F, 0x37, 0xBA, 0xA2, 0xDF }};
@@ -91,32 +87,25 @@ HookedSetVariable(
     {       
         // Check of input is not null
         if (VariableName != NULL && VariableName[0] != CHAR_NULL && VendorGuid != NULL) 
-        {           
-            // Check if GUID is correct
-            if (CompareGuid(VendorGuid, &VariableGuid)) 
-            {
-                // Testing (instant bsoder 2000)
-                RT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
-                
-                // Check if variable name is same as our declared one
-                // this is used to check if call is really from our program
-                // running in the OS (client)
-                if (StrnCmp(VariableName, VARIABLE_NAME, 
-                    (sizeof(VARIABLE_NAME) / sizeof(CHAR16)) - 1) == 0) 
+        {                     
+            // Check if variable name is same as our declared one
+            // this is used to check if call is really from our program
+            // running in the OS (client)
+            if (StrnCmp(VariableName, VARIABLE_NAME, 
+                (sizeof(VARIABLE_NAME) / sizeof(CHAR16)) - 1) == 0) 
+            {              
+                if (DataSize == 0 && Data == NULL)
                 {
-                    if (DataSize == 0 && Data == NULL)
-                    {
-                        // Skip no data
-                        return EFI_SUCCESS;
-                    }
+                    // Skip no data
+                    return EFI_SUCCESS;
+                }
 
-                    // Check if the data size is correct
-                    if (DataSize == sizeof(MemoryCommand)) 
-                    {
-                        // We did it!
-                        // Now we can call the magic function
-                        return RunCommand((MemoryCommand*)Data);
-                    }
+                // Check if the data size is correct
+                if (DataSize == sizeof(MemoryCommand)) 
+                {
+                    // We did it!
+                    // Now we can call the magic function
+                    return RunCommand((MemoryCommand*)Data);
                 }
             }
         }
@@ -298,4 +287,6 @@ efi_main(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     Print(L"Made by: Samuel Tulach\n");
     Print(L"Thanks to: @Mattiwatti (EfiGuard), Roderick W. Smith (rodsbooks.com)\n\n");
     Print(L"Driver has been loaded successfully. You can now boot to the OS.\n");
+
+    return EFI_SUCCESS;
 }
