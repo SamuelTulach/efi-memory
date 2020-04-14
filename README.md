@@ -15,19 +15,19 @@ client/efi-mapper/
 Compiling any of the example client programs is pretty simple. Open the solution file in Visual Studio and compile the project with it's default settings.
 
 Compiling the driver is also pretty simple. First you need a working Linux install (or you can use Linux subsystem for Windows) and install gnu-efi (commands for Ubuntu 18.04):
-
+```
     apt install gnu-efi
-
+```
 That's all you need to install. Package manager (in the example apt) should take care of all the depencies for you. Once the installation is complete, clone this repo (make sure you have git installed):
-    
+```   
     git clone https://github.com/SamuelTulach/efi-memory
-
+```
 Than navigate to the driver folder and compile the driver with make:
-
+```
     cd efi-memory
     cd driver
     make
-
+```
 If the compile was successful, you should now see memory.efi in the driver folder.
 
 ## Usage
@@ -46,12 +46,12 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 ```
 4. Boot from the USB driver
 5. An UEFI shell should start, change directory to your USB (FS0 should be the USB since we are booting from it) and list files:
-
+```
     FS0:
     ls
-
+```
 6. You should see file memory.efi, if you do, load it:
-
+```
     load memory.efi
-
+```
 7. Now there should be a nice efi-memory ascii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure
