@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <winternl.h>
+#include <Tlhelp32.h>
 #pragma comment(lib, "ntdll.lib")
 
 namespace nt

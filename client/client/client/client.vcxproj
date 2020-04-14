@@ -155,6 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver.h" />
+    <ClInclude Include="helper.h" />
     <ClInclude Include="nt.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

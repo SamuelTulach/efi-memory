@@ -32,4 +32,55 @@ namespace Helper
 
 		return Utils::CallKernelFunction<void>(nullptr, kernel_ExFreePool, address);
 	}
+
+	uint64_t GetCurrentProcessKrnl() 
+	{
+		static uint64_t kernel_IoGetCurrentProcess = 0;
+
+		if (!kernel_IoGetCurrentProcess)
+			kernel_IoGetCurrentProcess = Utils::GetKernelModuleExport(Utils::GetKernelModuleAddress("ntoskrnl.exe"), "IoGetCurrentProcess");
+
+		uint64_t peprocess = 0;
+
+		if (!Utils::CallKernelFunction<uint64_t>(&peprocess, kernel_IoGetCurrentProcess))
+			return 0;
+
+		return peprocess;
+	}
+
+	NTSTATUS LookupProcess(uint32_t pid, uintptr_t* peprocess) 
+	{
+		static uint64_t kernel_PsLookupProcessByProcessId = 0;
+
+		if (!kernel_PsLookupProcessByProcessId)
+			kernel_PsLookupProcessByProcessId = Utils::GetKernelModuleExport(Utils::GetKernelModuleAddress("ntoskrnl.exe"), "PsLookupProcessByProcessId");
+
+		NTSTATUS status;
+
+		if (!Utils::CallKernelFunction(&status, kernel_PsLookupProcessByProcessId, pid, peprocess))
+			return 0;
+
+		return status;
+	}
+
+	NTSTATUS CopyVirtualMemory(uintptr_t sourceprocess, 
+		uintptr_t sourceaddress, 
+		uintptr_t destinationprocess, 
+		uintptr_t destinationaddress, 
+		SIZE_T size, 
+		uint8_t mode, 
+		PSIZE_T returnsize)
+	{
+		static uint64_t kernel_MmCopyVirtualMemory = 0;
+
+		if (!kernel_MmCopyVirtualMemory)
+			kernel_MmCopyVirtualMemory = Utils::GetKernelModuleExport(Utils::GetKernelModuleAddress("ntoskrnl.exe"), "MmCopyVirtualMemory");
+
+		NTSTATUS status;
+
+		if (!Utils::CallKernelFunction(&status, kernel_MmCopyVirtualMemory, sourceprocess, sourceaddress, destinationprocess, destinationaddress, size, mode, returnsize))
+			return 0;
+
+		return status;
+	}
 }

@@ -22,10 +22,13 @@
 */
 
 #include <iostream>
+#include <iomanip>
 #include "nt.h"
 #include "driver.h"
 #include "utils.h"
 #include "helper.h"
+
+#define EXPLORER_EXE L"explorer.exe"
 
 int main()
 {
@@ -34,6 +37,7 @@ int main()
     if (!status) 
     {
         std::cout << "[-] Failed to enable privilege" << std::endl;
+        return -1;
     }
 
     std::cout << "[>] Testing driver..." << std::endl;
@@ -41,8 +45,47 @@ int main()
     if (!status)
     {
         std::cout << "[-] Driver test failed" << std::endl;
+        return -1;
     }
 
-    uintptr_t test = Helper::AllocatePool(nt::PagedPool, sizeof(uintptr_t));
-    printf("%llx\n", test);
+    std::cout << "[>] Getting current process PEPROCESS..." << std::endl;
+    uintptr_t current = Helper::GetCurrentProcessKrnl();
+    if (!current) 
+    {
+        std::cout << "[-] Failed to get current process" << std::endl;
+        return -1;
+    }
+    
+    std::cout << "[>] Getting explorer.exe PEPROCESS..." << std::endl;
+    int pid = Utils::Find(EXPLORER_EXE);
+    if (!pid) 
+    {
+        std::cout << "[-] Failed to find explorer.exe pid" << std::endl;
+        return -1;
+    }
+    
+    uintptr_t explorer = 0;
+    Helper::LookupProcess(pid, &explorer);
+    if (!explorer) 
+    {
+        std::cout << "[-] Failed to get explorer.exe PEPROCESS" << std::endl;
+        return -1;
+    }
+
+    std::cout << "[>] Reading DOS header..." << std::endl;
+    uintptr_t baseaddress = Utils::GetModuleBaseAddress(pid, EXPLORER_EXE);
+    if (!baseaddress) 
+    {
+        std::cout << "[-] Failed to get explorer.exe base address" << std::endl;
+        return -1;
+    }
+    
+    IMAGE_DOS_HEADER header = { 0 };
+    SIZE_T retsize = 0;
+    NTSTATUS copystatus = Helper::CopyVirtualMemory(explorer, baseaddress, current, (uintptr_t)&header, sizeof(IMAGE_DOS_HEADER), 0, &retsize);
+
+    std::cout << "[+] Test read:" << std::endl;
+    std::cout << "\tStatus: " << std::hex << std::setw(8) << std::setfill('0') << std::uppercase << copystatus << std::nouppercase << std::dec << std::endl;
+    std::cout << "\tDOS magic: " << header.e_magic << std::endl;
+    std::cout << "\tNT offset: " << header.e_lfanew << std::endl;
 }
