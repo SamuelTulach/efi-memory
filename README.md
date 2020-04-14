@@ -17,3 +17,8 @@ Compiling any of the example client programs is pretty simple. Open the solution
 Compiling the driver is also pretty simple. First you need a working Linux install (or you can use subsystem for Windows) and install gnu-efi (commands for Ubuntu 18.04):
 
     apt install gnu-efi
+
+That's all you need to install. Package manager (in the example apt) should install all the depencies for you. Once the installation is complete, close this repo (make sure you have git installed):
+    
+    git clone https://github.com/SamuelTulach/efi-memory
+
