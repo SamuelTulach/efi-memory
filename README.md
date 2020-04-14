@@ -55,3 +55,9 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
     load memory.efi
 ```
 7. Now there should be a nice efi-memory ascii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure (while Windows is booting the screen should go blue with confirmation text)
+
+## Thanks
+I would like to thank @z175 for kdmapper project since that is a masterpiece. @Mattiwatti for EfiGuard project and the idea of SetVariable hooking. Roderick W. Smith for rodsbooks.com (really useful site to read about EFI basics).
+
+## License
+This repo is licensed under MIT if not stated otherwise in subfolders.
