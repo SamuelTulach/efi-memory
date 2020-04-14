@@ -7,5 +7,6 @@ Efi-memory is a proof-of-concept EFI runtime driver for reading and writing to v
 ## Repo content
 driver/
 - EFI driver itself
+
 client/efi-mapper
 - [kdmapper](https://github.com/z175/kdmapper/) fork that uses efi-memory to manual map any Windows driver
