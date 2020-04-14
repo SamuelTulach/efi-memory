@@ -114,7 +114,6 @@ namespace Utils
 
 			if (!kernel_NtGdiDdDDIReclaimAllocations2)
 			{
-				std::cout << "[-] Failed to get export win32kbase.NtGdiDdDDIReclaimAllocations2" << std::endl;
 				return false;
 			}
 
@@ -131,6 +130,69 @@ namespace Utils
 		*out_kernel_function_ptr = kernel_function_ptr;
 		*out_kernel_original_function_address = kernel_original_function_address;
 
+		return true;
+	}
+
+	template<typename T, typename ...A>
+	bool CallKernelFunction(T* out_result, uint64_t kernel_function_address, const A ...arguments)
+	{
+		constexpr auto call_void = std::is_same_v<T, void>;
+
+		if constexpr (!call_void)
+		{
+			if (!out_result)
+				return false;
+		}
+		else
+		{
+			UNREFERENCED_PARAMETER(out_result);
+		}
+
+		if (!kernel_function_address)
+			return false;
+
+		// Setup function call 
+
+		const auto NtGdiDdDDIReclaimAllocations2 = reinterpret_cast<void*>(GetProcAddress(LoadLibraryA("gdi32full.dll"), "NtGdiDdDDIReclaimAllocations2"));
+
+		if (!NtGdiDdDDIReclaimAllocations2)
+		{
+			std::cout << "[-] Failed to get export gdi32full.NtGdiDdDDIReclaimAllocations2" << std::endl;
+			return false;
+		}
+
+		// Get function pointer (@win32kbase!gDxgkInterface table) used by NtGdiDdDDIReclaimAllocations2 and save the original address (dxgkrnl!DxgkReclaimAllocations2)
+
+		uint64_t kernel_function_ptr = 0;
+		uint64_t kernel_original_function_address = 0;
+
+		if (!GetNtGdiDdDDIReclaimAllocations2KernelInfo(&kernel_function_ptr, &kernel_original_function_address))
+			return false;
+
+		// Overwrite the pointer with kernel_function_address
+
+		Driver::WriteMemory(kernel_function_ptr, &kernel_function_address, sizeof(kernel_function_address));
+
+		// Call function 
+
+		if constexpr (!call_void)
+		{
+			using FunctionFn = T(__stdcall*)(A...);
+			const auto Function = static_cast<FunctionFn>(NtGdiDdDDIReclaimAllocations2);
+
+			*out_result = Function(arguments...);
+		}
+		else
+		{
+			using FunctionFn = void(__stdcall*)(A...);
+			const auto Function = static_cast<FunctionFn>(NtGdiDdDDIReclaimAllocations2);
+
+			Function(arguments...);
+		}
+
+		// Restore the pointer
+
+		Driver::WriteMemory(kernel_function_ptr, &kernel_original_function_address, sizeof(kernel_original_function_address));
 		return true;
 	}
 }
