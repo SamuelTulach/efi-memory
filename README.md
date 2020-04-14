@@ -54,4 +54,4 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 
     load memory.efi
 
-7. Now there should be a nice efi-memory anscii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure
+7. Now there should be a nice efi-memory ascii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure
