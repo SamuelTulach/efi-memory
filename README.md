@@ -44,3 +44,14 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
         └───Boot
                 bootx64.efi
 ```
+4. Boot from the USB driver
+5. An UEFI shell should start, change directory to your USB (FS0 should be the USB since we are booting from it) and list files:
+
+    FS0:
+    ls
+
+6. You should see file memory.efi, if you do, load it:
+
+    load memory.efi
+
+7. Now there should be a nice efi-memory anscii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure
