@@ -38,9 +38,9 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 3. Create following folder structure:
 
     USB:.
-    │ memory.efi
-    │
-    └───EFI
-    └───Boot
-    bootx64.efi
+   │   memory.efi
+   │
+   └───EFI
+        └───Boot
+                bootx64.efi
  
