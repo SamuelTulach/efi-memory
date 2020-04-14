@@ -18,7 +18,14 @@ Compiling the driver is also pretty simple. First you need a working Linux insta
 
     apt install gnu-efi
 
-That's all you need to install. Package manager (in the example apt) should install all the depencies for you. Once the installation is complete, close this repo (make sure you have git installed):
+That's all you need to install. Package manager (in the example apt) should install all the depencies for you. Once the installation is complete, clone this repo (make sure you have git installed):
     
     git clone https://github.com/SamuelTulach/efi-memory
 
+Than navigate to the driver folder and compile the driver with make:
+
+    cd efi-memory
+    cd driver
+    make
+
+If the compile was successful, you should now see memory.efi in the driver folder.
