@@ -1,7 +1,6 @@
 #pragma once
 #include <Windows.h>
 #include <winternl.h>
-#include <Tlhelp32.h>
 #pragma comment(lib, "ntdll.lib")
 
 namespace nt
@@ -12,7 +11,7 @@ namespace nt
 	constexpr auto SystemModuleInformation = 11;
 	constexpr auto SystemHandleInformation = 16;
 	constexpr auto SystemExtendedHandleInformation = 64;
-
+	
 	typedef struct _SYSTEM_HANDLE
 	{
 		PVOID Object;
@@ -23,14 +22,14 @@ namespace nt
 		USHORT ObjectTypeIndex;
 		ULONG HandleAttributes;
 		ULONG Reserved;
-	} SYSTEM_HANDLE, * PSYSTEM_HANDLE;
+	} SYSTEM_HANDLE, *PSYSTEM_HANDLE;
 
 	typedef struct _SYSTEM_HANDLE_INFORMATION_EX
 	{
 		ULONG_PTR HandleCount;
 		ULONG_PTR Reserved;
 		SYSTEM_HANDLE Handles[1];
-	} SYSTEM_HANDLE_INFORMATION_EX, * PSYSTEM_HANDLE_INFORMATION_EX;
+	} SYSTEM_HANDLE_INFORMATION_EX, *PSYSTEM_HANDLE_INFORMATION_EX;
 
 	typedef enum _POOL_TYPE {
 		NonPagedPool,
@@ -70,37 +69,37 @@ namespace nt
 		USHORT LoadCount;
 		USHORT OffsetToFileName;
 		UCHAR FullPathName[256];
-	} RTL_PROCESS_MODULE_INFORMATION, * PRTL_PROCESS_MODULE_INFORMATION;
+	} RTL_PROCESS_MODULE_INFORMATION, *PRTL_PROCESS_MODULE_INFORMATION;
 
 	typedef struct _RTL_PROCESS_MODULES
 	{
 		ULONG NumberOfModules;
 		RTL_PROCESS_MODULE_INFORMATION Modules[1];
-	} RTL_PROCESS_MODULES, * PRTL_PROCESS_MODULES;
+	} RTL_PROCESS_MODULES, *PRTL_PROCESS_MODULES;
 
-	extern "C" 
+	extern "C"
 	{
 		NTSYSAPI
-		NTSTATUS
-		NTAPI
-		RtlAdjustPrivilege(
-			_In_ ULONG Privilege,
-			_In_ BOOLEAN Enable,
-			_In_ BOOLEAN Client,
-			_Out_ PBOOLEAN WasEnabled
-		);
+			NTSTATUS
+			NTAPI
+			RtlAdjustPrivilege(
+				_In_ ULONG Privilege,
+				_In_ BOOLEAN Enable,
+				_In_ BOOLEAN Client,
+				_Out_ PBOOLEAN WasEnabled
+			);
 
 		NTSYSCALLAPI
-		NTSTATUS
-		NTAPI
-		NtSetSystemEnvironmentValueEx(
-			_In_ PUNICODE_STRING VariableName,
-			_In_ LPGUID VendorGuid,
-			_In_reads_bytes_opt_(ValueLength) PVOID Value,
-			_In_ ULONG ValueLength,
-			_In_ ULONG Attributes
-		);
-	}	
+			NTSTATUS
+			NTAPI
+			NtSetSystemEnvironmentValueEx(
+				_In_ PUNICODE_STRING VariableName,
+				_In_ LPGUID VendorGuid,
+				_In_reads_bytes_opt_(ValueLength) PVOID Value,
+				_In_ ULONG ValueLength,
+				_In_ ULONG Attributes
+			);
+	}
 
 	#define RTL_CONSTANT_STRING(s) { sizeof(s) - sizeof((s)[0]), sizeof(s), (PWSTR)s }
 }
