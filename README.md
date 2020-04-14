@@ -16,4 +16,4 @@ Compiling any of the example client programs is pretty simple. Open the solution
 
 Compiling the driver is also pretty simple. First you need a working Linux install (or you can use subsystem for Windows) and install gnu-efi (commands for Ubuntu 18.04):
 
-  apt install gnu-efi
+    apt install gnu-efi
