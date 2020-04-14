@@ -37,7 +37,7 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 2. Format some USB driver to FAT32
 3. Create following folder structure:
 ```
-    USB:.
+  USB:.
    │   memory.efi
    │
    └───EFI
