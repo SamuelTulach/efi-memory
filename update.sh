@@ -9,6 +9,7 @@ git add *.vcxproj
 git add *.config
 git add *.hpp
 git add *.md
+git add *.png
 
 git commit -m "$(date)"
 
