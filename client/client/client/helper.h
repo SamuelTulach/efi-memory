@@ -63,7 +63,26 @@ namespace Helper
 		return status;
 	}
 
-	NTSTATUS CopyVirtualMemory(uintptr_t sourceprocess, 
+	uint64_t GetSectionBase(uintptr_t peprocess)
+	{
+		if (!peprocess)
+			return 0;
+
+		static uint64_t kernel_PsGetProcessSectionBaseAddress = 0;
+
+		if (!kernel_PsGetProcessSectionBaseAddress)
+			kernel_PsGetProcessSectionBaseAddress = Utils::GetKernelModuleExport(Utils::GetKernelModuleAddress("ntoskrnl.exe"), "PsGetProcessSectionBaseAddress");
+
+		uint64_t baseaddr = 0;
+
+		if (!Utils::CallKernelFunction(&baseaddr, kernel_PsGetProcessSectionBaseAddress, peprocess))
+			return 0;
+
+		return baseaddr;
+	}
+
+	NTSTATUS CopyVirtualMemory(
+		uintptr_t sourceprocess, 
 		uintptr_t sourceaddress, 
 		uintptr_t destinationprocess, 
 		uintptr_t destinationaddress, 
