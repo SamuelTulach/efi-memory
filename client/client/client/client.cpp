@@ -41,4 +41,11 @@ int main()
     {
         std::cout << "[-] Driver test failed" << std::endl;
     }
+
+    uint64_t kernel_function_ptr = 0;
+    uint64_t kernel_original_function_address = 0;
+
+    Utils::GetNtGdiDdDDIReclaimAllocations2KernelInfo(&kernel_function_ptr, &kernel_original_function_address);
+
+    printf("%llx %llx\n", kernel_function_ptr, kernel_original_function_address);
 }
