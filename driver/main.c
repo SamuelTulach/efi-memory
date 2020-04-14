@@ -29,13 +29,13 @@ typedef struct _DummyProtocalData{
 } DummyProtocalData;
 
 // Pointers to original functions
-EFI_SET_VARIABLE oSetVariable = NULL;
+static EFI_SET_VARIABLE oSetVariable = NULL;
 
 // Global declarations
-EFI_EVENT NotifyEvent = NULL;
-EFI_EVENT ExitEvent = NULL;
-BOOLEAN Virtual = FALSE;
-BOOLEAN Runtime = FALSE;
+static EFI_EVENT NotifyEvent = NULL;
+static EFI_EVENT ExitEvent = NULL;
+static BOOLEAN Virtual = FALSE;
+static BOOLEAN Runtime = FALSE;
 
 // Defines used to check if call is really coming from client
 #define VARIABLE_NAME L"yromeMifE" // EfiMemory
@@ -66,7 +66,7 @@ RunCommand(MemoryCommand* cmd)
     if (cmd->operation == 0) 
     {
         // Same as memcpy function
-        CopyMem(cmd->data1, cmd->data2, cmd->size);
+        CopyMem(cmd->data1, cmd->data2, cmd->size);    
         return EFI_SUCCESS;
     }
 
@@ -88,13 +88,16 @@ HookedSetVariable(
 {
     // Use our hook only after we are in virtual address-space
     if (Virtual && Runtime) 
-    {
+    {       
         // Check of input is not null
         if (VariableName != NULL && VariableName[0] != CHAR_NULL && VendorGuid != NULL) 
-        {
+        {           
             // Check if GUID is correct
             if (CompareGuid(VendorGuid, &VariableGuid)) 
             {
+                // Testing (instant bsoder 2000)
+                RT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+                
                 // Check if variable name is same as our declared one
                 // this is used to check if call is really from our program
                 // running in the OS (client)
@@ -131,6 +134,12 @@ SetVirtualAddressMapEvent(
     IN VOID* Context
     )
 {  
+    // Convert orignal SetVariable address
+    RT->ConvertPointer(0, &oSetVariable);
+    
+    // Convert runtime services pointer
+    RtLibEnableVirtualMappings();
+
     // Null and close the event so it does not get called again
     NotifyEvent = NULL;
 
@@ -195,8 +204,7 @@ SetServicePointer(
     // Restore task priority level
     BS->RestoreTPL(Tpl);
 
-    //return OriginalFunction;
-    return 0;
+    return OriginalFunction;
 }
 
 // EFI driver unload routine
