@@ -2,8 +2,7 @@
   <img src="assets/logo.png"/>
 </p>
 
-Efi-memory is a proof-of-concept EFI runtime driver for reading and writing to virtual memory. It hooks SetVariable() to communicate with client program in the OS. 
-
+Efi-memory is a proof-of-concept EFI runtime driver for reading and writing to virtual memory. It uses [EfiGuards](https://github.com/Mattiwatti/EfiGuard/) method of hooking set variable to communicate with the user-mode process.
 ## Repo content
 driver/
 - EFI driver itself
