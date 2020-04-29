@@ -41,8 +41,13 @@ bool efi_driver::MemCopy(HANDLE device_handle, uint64_t destination, uint64_t so
 	MemoryCommand* cmd = new MemoryCommand();
 	cmd->operation = 0;
 	cmd->magic = COMMAND_MAGIC;
-	cmd->data1 = destination;
-	cmd->data2 = source;
+	
+	uintptr_t data[10];
+	data[0] = destination;
+	data[1] = source;
+
+	memcpy(&cmd->data, &data[0], sizeof(data));
+
 	cmd->size = (int)size;
 
 	SendCommand(cmd);
@@ -82,8 +87,19 @@ uint64_t efi_driver::AllocatePool(HANDLE device_handle, nt::POOL_TYPE pool_type,
 
 	uint64_t allocated_pool = 0;
 
-	if (!CallKernelFunction(device_handle, &allocated_pool, kernel_ExAllocatePool, pool_type, size))
-		return 0;
+	MemoryCommand* cmd = new MemoryCommand();
+	cmd->operation = 1;
+	cmd->magic = COMMAND_MAGIC;
+
+	uintptr_t data[10];
+	data[0] = kernel_ExAllocatePool;
+	data[1] = pool_type;
+	data[2] = size;
+	data[3] = (uintptr_t)&allocated_pool;
+
+	memcpy(&cmd->data, &data[0], sizeof(data));
+
+	SendCommand(cmd);
 
 	return allocated_pool;
 }
@@ -98,7 +114,19 @@ bool efi_driver::FreePool(HANDLE device_handle, uint64_t address)
 	if (!kernel_ExFreePool)
 		kernel_ExFreePool = GetKernelModuleExport(device_handle, utils::GetKernelModuleAddress("ntoskrnl.exe"), "ExFreePool");
 
-	return CallKernelFunction<void>(device_handle, nullptr, kernel_ExFreePool, address);
+	MemoryCommand* cmd = new MemoryCommand();
+	cmd->operation = 2;
+	cmd->magic = COMMAND_MAGIC;
+
+	uintptr_t data[10];
+	data[0] = kernel_ExFreePool;
+	data[1] = address;
+
+	memcpy(&cmd->data, &data[0], sizeof(data));
+
+	SendCommand(cmd);
+
+	return true; // yolo?
 }
 
 uint64_t efi_driver::GetKernelModuleExport(HANDLE device_handle, uint64_t kernel_module_base, const std::string & function_name)
@@ -189,6 +217,36 @@ bool efi_driver::GetNtGdiDdDDIReclaimAllocations2KernelInfo(HANDLE device_handle
 
 	*out_kernel_function_ptr = kernel_function_ptr;
 	*out_kernel_original_function_address = kernel_original_function_address;
+
+	return true;
+}
+
+bool efi_driver::GetNtGdiGetCOPPCompatibleOPMInformationInfo(HANDLE device_handle, uint64_t* out_kernel_function_ptr, uint8_t* out_kernel_original_bytes)
+{
+	// 48ff2551d81f00   jmp	cs:__imp_NtGdiGetCOPPCompatibleOPMInformation
+	// cccccccccc       padding
+
+	static uint64_t kernel_function_ptr = 0;
+	static uint8_t kernel_original_jmp_bytes[12] = { 0 };
+
+	if (!kernel_function_ptr || kernel_original_jmp_bytes[0] == 0)
+	{
+		const uint64_t kernel_NtGdiGetCOPPCompatibleOPMInformation = GetKernelModuleExport(device_handle, utils::GetKernelModuleAddress("win32kfull.sys"), "NtGdiGetCOPPCompatibleOPMInformation");
+
+		if (!kernel_NtGdiGetCOPPCompatibleOPMInformation)
+		{
+			std::cout << "[-] Failed to get export win32kfull.NtGdiGetCOPPCompatibleOPMInformation" << std::endl;
+			return false;
+		}
+
+		kernel_function_ptr = kernel_NtGdiGetCOPPCompatibleOPMInformation;
+
+		if (!ReadMemory(device_handle, kernel_function_ptr, kernel_original_jmp_bytes, sizeof(kernel_original_jmp_bytes)))
+			return false;
+	}
+
+	*out_kernel_function_ptr = kernel_function_ptr;
+	memcpy(out_kernel_original_bytes, kernel_original_jmp_bytes, sizeof(kernel_original_jmp_bytes));
 
 	return true;
 }

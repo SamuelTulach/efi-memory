@@ -23,6 +23,7 @@ portable_executable::vec_relocs portable_executable::GetRelocs(void* image_base)
 		return {};
 
 	vec_relocs relocs;
+	return relocs; // gonna probably kill me for this but for some reason drivers without reallocation seems falsely reporting some shit memory regions causing mapper to crash
 
 	auto current_base_relocation = reinterpret_cast<PIMAGE_BASE_RELOCATION>(reinterpret_cast<uint64_t>(image_base) + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
 	const auto reloc_end = reinterpret_cast<uint64_t>(current_base_relocation) + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;

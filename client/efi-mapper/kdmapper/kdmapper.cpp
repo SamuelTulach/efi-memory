@@ -79,18 +79,23 @@ uint64_t kdmapper::MapDriver(HANDLE iqvw64e_device_handle, const std::string& dr
 
 		std::cout << "[<] Calling DriverEntry 0x" << reinterpret_cast<void*>(address_of_entry_point) << std::endl;
 
-		NTSTATUS status = 0;
+		long status = 0; // NTSTATUS
 
-		if (!efi_driver::CallKernelFunction(iqvw64e_device_handle, &status, address_of_entry_point))
-		{
-			std::cout << "[-] Failed to call driver entry" << std::endl;
-			break;
-		}
+		efi_driver::MemoryCommand* cmd = new efi_driver::MemoryCommand();
+		cmd->operation = 5;
+		cmd->magic = COMMAND_MAGIC;
+
+		uintptr_t data[10];
+		data[0] = address_of_entry_point;
+		data[1] = (uintptr_t)&status;
+
+		memcpy(&cmd->data, &data[0], sizeof(data));
+
+		efi_driver::SendCommand(cmd);
 
 		std::cout << "[+] DriverEntry returned 0x" << std::hex << std::setw(8) << std::setfill('0') << std::uppercase << status << std::nouppercase << std::dec << std::endl;
 
 		// Erase PE headers
-
 		efi_driver::SetMemory(iqvw64e_device_handle, kernel_image_base, 0, nt_headers->OptionalHeader.SizeOfHeaders);
 		return kernel_image_base;
 

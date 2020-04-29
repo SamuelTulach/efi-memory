@@ -2,6 +2,8 @@
 // instead of SysV ABI, we now have to do transitions
 // GNU-EFI has a functionality for this (thanks god)
 #define GNU_EFI_USE_MS_ABI 1
+#define stdcall __attribute__((stdcall)) // wHy NoT tO jUsT uSe MsVc
+#define fastcall __attribute__((fastcall))
 
 // Mandatory defines
 #include <efi.h>
@@ -42,10 +44,16 @@ typedef struct _MemoryCommand
 {
     int magic;
     int operation;
-    unsigned long long data1;
-    unsigned long long data2;
+    unsigned long long data[10];
     int size;
 } MemoryCommand;
+
+// Functions (Windows only)
+typedef uintptr_t (stdcall *ExAllocatePool)(int type, uintptr_t size);
+typedef void (stdcall *ExFreePool)(uintptr_t address);
+typedef void (stdcall *StandardFuncStd)();
+typedef void (fastcall *StandardFuncFast)();
+typedef unsigned long (stdcall *DriverEntry)(void* driver, void* registry);
 
 // Function that actually performs the r/w
 EFI_STATUS
@@ -62,8 +70,58 @@ RunCommand(MemoryCommand* cmd)
     if (cmd->operation == 0) 
     {
         // Same as memcpy function
-        CopyMem(cmd->data1, cmd->data2, cmd->size);    
+        CopyMem(cmd->data[0], cmd->data[1], cmd->size);    
+
         return EFI_SUCCESS;
+    }
+
+    // Call ExAllocatePool
+    if (cmd->operation == 1) 
+    {
+        void* function = cmd->data[0]; // Pointer to the function (supplied by client)
+        ExAllocatePool exalloc = (ExAllocatePool)function;
+        int temp = cmd->data[1]; // gcc you ok?
+        uintptr_t allocbase = exalloc(temp, cmd->data[2]);
+        *(uintptr_t*)cmd->data[3] = allocbase;
+    }
+
+    // Call ExFreePool
+    if (cmd->operation == 2) 
+    {
+        void* function = cmd->data[0];
+        ExFreePool exfree = (ExFreePool)function;
+        exfree(cmd->data[1]);
+    }
+
+    // Call any void function (__stdcall)
+    if (cmd->operation == 3) 
+    {
+        void* function = cmd->data[0];
+        StandardFuncStd stand = (StandardFuncStd)function;
+        stand();
+    }
+
+    // Call any void function (__fastcall)
+    if (cmd->operation == 4) 
+    {
+        void* function = cmd->data[0];
+        StandardFuncFast stand = (StandardFuncFast)function;
+        stand();
+    }
+
+    // Call driver entry
+    if (cmd->operation == 5) 
+    {
+        void* function = cmd->data[0];
+        DriverEntry entry = (DriverEntry)function;
+        
+        // gcc compiles long as 8 byte
+        // msvc compiles long as 4 byte
+        // we are gonna use int
+        // you can't even imagine how long I was fking 
+        // with this
+        int status = entry(0, 0);
+        *(int*)cmd->data[1] = status;
     }
 
     // Invalid command
@@ -249,7 +307,7 @@ efi_main(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
                                 TPL_NOTIFY,
                                 SetVirtualAddressMapEvent,
                                 NULL,
-                                VirtualGuid,
+                                &VirtualGuid,
                                 &NotifyEvent);
 
     // Return if event create failed
@@ -264,7 +322,7 @@ efi_main(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
                                 TPL_NOTIFY,
                                 ExitBootServicesEvent,
                                 NULL,
-                                ExitGuid,
+                                &ExitGuid,
                                 &ExitEvent);
 
     // Return if event create failed (yet again)
