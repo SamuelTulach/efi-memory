@@ -16,17 +16,17 @@ Compiling any of the example client programs is pretty simple. Open the solution
 
 Compiling the driver is also pretty simple. First you need a working Linux install (or you can use Linux subsystem for Windows) and install gnu-efi (commands for Arch Linux):
 ```
-    sudo pacman -S gnu-efi-libs
+sudo pacman -S gnu-efi-libs
 ```
 That's all you need to install. Package manager (in the example apt) should take care of all the depencies for you. Once the installation is complete, clone this repo (make sure you have git installed):
 ```   
-    git clone https://github.com/SamuelTulach/efi-memory
+git clone https://github.com/SamuelTulach/efi-memory
 ```
 Than navigate to the driver folder and compile the driver with make:
 ```
-    cd efi-memory
-    cd driver
-    make
+cd efi-memory
+cd driver
+make
 ```
 If the compile was successful, you should now see memory.efi in the driver folder.
 
@@ -89,22 +89,22 @@ In order to use the efi-memory driver, you need to load it. First, obtain a copy
 2. Format some USB drive to FAT32
 3. Create following folder structure:
 ```
-  USB:.
-   │   memory.efi
-   │
-   └───EFI
-        └───Boot
-                bootx64.efi
+USB:.
+ │   memory.efi
+ │
+ └───EFI
+      └───Boot
+              bootx64.efi
 ```
 4. Boot from the USB drive
 5. An UEFI shell should start, change directory to your USB (FS0 should be the USB since we are booting from it) and list files:
 ```
-    FS0:
-    ls
+FS0:
+ls
 ```
 6. You should see file memory.efi, if you do, load it:
 ```
-    load memory.efi
+load memory.efi
 ```
 7. Now there should be a nice efi-memory ascii logo printed in your UEFI shell. If there is, the driver was loaded successfuly. If that is the case, type `exit` to start standard boot procedure (while Windows is booting the screen should go blue with confirmation text)
 
