@@ -14,9 +14,9 @@ client/efi-mapper/
 ## Compiling
 Compiling any of the example client programs is pretty simple. Open the solution file in Visual Studio and compile the project with it's default settings.
 
-Compiling the driver is also pretty simple. First you need a working Linux install (or you can use Linux subsystem for Windows) and install gnu-efi (commands for Arch Linux):
+Compiling the driver is also pretty simple. First you need a working Linux install (or you can use Linux subsystem for Windows) and install gnu-efi (commands for Ubuntu 20.04):
 ```
-sudo pacman -S gnu-efi-libs
+sudo apt install gnu-efi build-essential
 ```
 That's all you need to install. Package manager (in the example apt) should take care of all the depencies for you. Once the installation is complete, clone this repo (make sure you have git installed):
 ```   
@@ -29,58 +29,6 @@ cd driver
 make
 ```
 If the compile was successful, you should now see memory.efi in the driver folder.
-
-**Note:** Some people were reporting that they were unable to compile the driver with some errors related to GUIDs (passing them in as a pointer). If you are having the same issues please make sure that you are using latest gcc and gnu-efi libs. Ubuntu and Debian have older versions of them and therefore require you to manually compile and install latest versions.
-
-```
-[q@propc:~]$ pacman -Q --info gnu-efi-libs
-Name            : gnu-efi-libs
-Version         : 3.0.11-2
-Description     : Library for building UEFI Applications using GNU toolchain
-Architecture    : x86_64
-URL             : https://sourceforge.net/projects/gnu-efi/
-Licenses        : GPL
-Groups          : None
-Provides        : None
-Depends On      : None
-Optional Deps   : None
-Required By     : None
-Optional For    : None
-Conflicts With  : None
-Replaces        : None
-Installed Size  : 1943.01 KiB
-Packager        : Felix Yan <felixonmars@archlinux.org>
-Build Date      : Sat 16 May 2020 12:57:49 PM CEST
-Install Date    : Tue 19 May 2020 03:12:17 PM CEST
-Install Reason  : Explicitly installed
-Install Script  : No
-Validated By    : Signature
-
-[q@propc:~]$ pacman -Q --info gcc
-Name            : gcc
-Version         : 10.1.0-1
-Description     : The GNU Compiler Collection - C and C++ frontends
-Architecture    : x86_64
-URL             : https://gcc.gnu.org
-Licenses        : GPL  LGPL  FDL  custom
-Groups          : base-devel
-Provides        : gcc-multilib
-Depends On      : gcc-libs=10.1.0-1  binutils>=2.28  libmpc
-Optional Deps   : lib32-gcc-libs: for generating code for 32-bit ABI [installed]
-Required By     : clang  dkms
-Optional For    : clion  xorg-xrdb
-Conflicts With  : None
-Replaces        : gcc-multilib
-Installed Size  : 147.19 MiB
-Packager        : Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
-Build Date      : Fri 08 May 2020 01:14:50 PM CEST
-Install Date    : Sat 16 May 2020 02:55:54 PM CEST
-Install Reason  : Explicitly installed
-Install Script  : No
-Validated By    : Signature
-
-[q@propc:~]$
-```
 
 ## Usage
 In order to use the efi-memory driver, you need to load it. First, obtain a copy of memory.efi ([compile it](https://github.com/SamuelTulach/efi-memory#compiling) or [download it from release section](https://github.com/SamuelTulach/efi-memory/releases)) and a copy of [EDK2 efi shell](https://github.com/tianocore/edk2/releases). Now follow these steps:

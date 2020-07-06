@@ -9,6 +9,13 @@
 #include <efi.h>
 #include <efilib.h>
 
+// Since Windows does not want to allocate execusable memory for our driver
+// in new versions of the OS, then we have to do it ourselves (I guess)
+// If you are on Windows 1909 and bellow, please use older version of the mapper
+// that use ExAllocatePool
+#define DRIVER_SIZE 26214400 // 25mb should be enough
+__attribute__((section(".text"))) char DriverBuffer[DRIVER_SIZE]; // It has to be in the text section so it's executable (surprise)
+
 // Our protocol GUID (should be different for every driver)
 static const EFI_GUID ProtocolGuid
     = { 0x2b479eea, 0x0ecf, 0x4a46, {0x96, 0x84, 0x8f, 0x14, 0xed, 0x92, 0xd9, 0xec} };
@@ -75,22 +82,13 @@ RunCommand(MemoryCommand* cmd)
         return EFI_SUCCESS;
     }
 
-    // Call ExAllocatePool
+    // "Allocate" memory
     if (cmd->operation == 1) 
     {
-        void* function = cmd->data[0]; // Pointer to the function (supplied by client)
-        ExAllocatePool exalloc = (ExAllocatePool)function;
-        int temp = cmd->data[1]; // gcc you ok?
-        uintptr_t allocbase = exalloc(temp, cmd->data[2]);
-        *(uintptr_t*)cmd->data[3] = allocbase;
-    }
-
-    // Call ExFreePool
-    if (cmd->operation == 2) 
-    {
-        void* function = cmd->data[0];
-        ExFreePool exfree = (ExFreePool)function;
-        exfree(cmd->data[1]);
+        if (cmd->data[2] < DRIVER_SIZE)  // Only small driver allowed, big drivers bad
+        {
+            *(uintptr_t*)cmd->data[3] = &DriverBuffer; // Get rekt windows
+        }      
     }
 
     // Call any void function (__stdcall)
@@ -307,7 +305,7 @@ efi_main(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
                                 TPL_NOTIFY,
                                 SetVirtualAddressMapEvent,
                                 NULL,
-                                &VirtualGuid,
+                                VirtualGuid,
                                 &NotifyEvent);
 
     // Return if event create failed
@@ -322,7 +320,7 @@ efi_main(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
                                 TPL_NOTIFY,
                                 ExitBootServicesEvent,
                                 NULL,
-                                &ExitGuid,
+                                ExitGuid,
                                 &ExitEvent);
 
     // Return if event create failed (yet again)
