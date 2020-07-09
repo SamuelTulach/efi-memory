@@ -1,13 +1,7 @@
-// Since some retard decided to use M$ ABI in EFI standard
-// instead of SysV ABI, we now have to do transitions
-// GNU-EFI has a functionality for this (thanks god)
-#define GNU_EFI_USE_MS_ABI 1
-#define stdcall __attribute__((stdcall)) // wHy NoT tO jUsT uSe MsVc
-#define fastcall __attribute__((fastcall))
+#include "general.h"
 
-// Mandatory defines
-#include <efi.h>
-#include <efilib.h>
+// Dummy hooks
+#include "dummy.h"
 
 // Since Windows does not want to allocate execusable memory for our driver
 // in new versions of the OS, then we have to do it ourselves (I guess)
@@ -182,6 +176,22 @@ SetVirtualAddressMapEvent(
     // Convert orignal SetVariable address
     RT->ConvertPointer(0, &oSetVariable);
     
+    // Convert all other addresses
+    RT->ConvertPointer(0, &oGetTime);
+    RT->ConvertPointer(0, &oSetTime);
+    RT->ConvertPointer(0, &oGetWakeupTime);
+    RT->ConvertPointer(0, &oSetWakeupTime);
+    RT->ConvertPointer(0, &oSetVirtualAddressMap);
+    RT->ConvertPointer(0, &oConvertPointer);
+    RT->ConvertPointer(0, &oGetVariable);
+    RT->ConvertPointer(0, &oGetNextVariableName);
+    //RT->ConvertPointer(0, &oSetVariable);
+    RT->ConvertPointer(0, &oGetNextHighMonotonicCount);
+    RT->ConvertPointer(0, &oResetSystem);
+    RT->ConvertPointer(0, &oUpdateCapsule);
+    RT->ConvertPointer(0, &oQueryCapsuleCapabilities);
+    RT->ConvertPointer(0, &oQueryVariableInfo);
+    
     // Convert runtime services pointer
     RtLibEnableVirtualMappings();
 
@@ -226,7 +236,7 @@ SetServicePointer(
     )
 {
     // We don't want to fuck up the system
-    if (ServiceTableFunction == NULL || NewFunction == NULL)
+    if (ServiceTableFunction == NULL || NewFunction == NULL || *ServiceTableFunction == NULL)
         return NULL;
 
     // Make sure boot services pointers are not null
@@ -333,16 +343,25 @@ efi_main(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     // Hook SetVariable (should not fail)
     oSetVariable = (EFI_SET_VARIABLE)SetServicePointer(&RT->Hdr, (VOID**)&RT->SetVariable, (VOID**)&HookedSetVariable);
 
+    // Hook all the other runtime services functions
+    oGetTime = (EFI_GET_TIME)SetServicePointer(&RT->Hdr, (VOID**)&RT->GetTime, (VOID**)&HookedGetTime);
+    oSetTime = (EFI_SET_TIME)SetServicePointer(&RT->Hdr, (VOID**)&RT->SetTime, (VOID**)&HookedSetTime);
+    oGetWakeupTime = (EFI_SET_TIME)SetServicePointer(&RT->Hdr, (VOID**)&RT->GetWakeupTime, (VOID**)&HookedGetWakeupTime);
+    oSetWakeupTime = (EFI_SET_WAKEUP_TIME)SetServicePointer(&RT->Hdr, (VOID**)&RT->SetWakeupTime, (VOID**)&HookedSetWakeupTime);
+    oSetVirtualAddressMap = (EFI_SET_VIRTUAL_ADDRESS_MAP)SetServicePointer(&RT->Hdr, (VOID**)&RT->SetVirtualAddressMap, (VOID**)&HookedSetVirtualAddressMap);
+    oConvertPointer = (EFI_CONVERT_POINTER)SetServicePointer(&RT->Hdr, (VOID**)&RT->ConvertPointer, (VOID**)&HookedConvertPointer);
+    oGetVariable = (EFI_GET_VARIABLE)SetServicePointer(&RT->Hdr, (VOID**)&RT->GetVariable, (VOID**)&HookedGetVariable);
+    oGetNextVariableName = (EFI_GET_NEXT_VARIABLE_NAME)SetServicePointer(&RT->Hdr, (VOID**)&RT->GetNextVariableName, (VOID**)&HookedGetNextVariableName);
+    //oSetVariable = (EFI_SET_VARIABLE)SetServicePointer(&RT->Hdr, (VOID**)&RT->SetVariable, (VOID**)&HookedSetVariable);
+    oGetNextHighMonotonicCount = (EFI_GET_NEXT_HIGH_MONO_COUNT)SetServicePointer(&RT->Hdr, (VOID**)&RT->GetNextHighMonotonicCount, (VOID**)&HookedGetNextHighMonotonicCount);
+    oResetSystem = (EFI_RESET_SYSTEM)SetServicePointer(&RT->Hdr, (VOID**)&RT->ResetSystem, (VOID**)&HookedResetSystem);
+    oUpdateCapsule = (EFI_UPDATE_CAPSULE)SetServicePointer(&RT->Hdr, (VOID**)&RT->UpdateCapsule, (VOID**)&HookedUpdateCapsule);
+    oQueryCapsuleCapabilities = (EFI_QUERY_CAPSULE_CAPABILITIES)SetServicePointer(&RT->Hdr, (VOID**)&RT->QueryCapsuleCapabilities, (VOID**)&HookedQueryCapsuleCapabilities);
+    oQueryVariableInfo = (EFI_QUERY_VARIABLE_INFO)SetServicePointer(&RT->Hdr, (VOID**)&RT->QueryVariableInfo, (VOID**)&HookedQueryVariableInfo);
+
     // Print confirmation text
-    Print(L"\n");
-    Print(L"       __ _                                  \n");
-    Print(L"  ___ / _(_)___ _ __  ___ _ __  ___ _ _ _  _ \n");
-    Print(L" / -_)  _| |___| '  \\/ -_) '  \\/ _ \\ '_| || |\n");
-    Print(L" \\___|_| |_|   |_|_|_\\___|_|_|_\\___/_|  \\_, |\n");
-    Print(L"                                        |__/ \n");
-    Print(L"Made by: Samuel Tulach\n");
-    Print(L"Thanks to: @Mattiwatti (EfiGuard), Roderick W. Smith (rodsbooks.com)\n\n");
-    Print(L"Driver has been loaded successfully. You can now boot to the OS.\n");
+    Print(L"efi-memory (build on: %a in: %a)\n", __DATE__, __TIME__);
+    Print(L"https://github.com/SamuelTulach/efi-memory\n");  
 
     return EFI_SUCCESS;
 }
