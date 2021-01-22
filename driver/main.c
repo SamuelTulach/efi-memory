@@ -3,7 +3,7 @@
 // Dummy hooks
 #include "dummy.h"
 
-// Since Windows does not want to allocate execusable memory for our driver
+// Since Windows does not want to allocate executable memory for our driver
 // in new versions of the OS, then we have to do it ourselves (I guess)
 // If you are on Windows 1909 and bellow, please use older version of the mapper
 // that use ExAllocatePool
