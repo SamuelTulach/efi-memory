@@ -1,3 +1,7 @@
+**Archivation note:** I put this together when I was 16, and as you can imagine, the code and repo quality reflect that. For example, [this](https://github.com/SamuelTulach/efi-memory/blob/master/driver/main.c#L9) was caused by a [different calling convention (ABI)](https://learn.microsoft.com/en-us/cpp/build/x64-calling-convention?view=msvc-170), and it worked just by pure luck in older OS versions.
+
+---
+
 <p align="center">
   <img src="assets/logo.png"/>
 </p>
